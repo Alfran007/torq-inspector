@@ -37,7 +37,7 @@
 
 // export default ResultsScreen;
 
-import React, { useState, useEffect } from 'react';
+/*import React, { useState, useEffect } from 'react';
 import { View, Text, Image } from 'react-native';
 import { Camera } from 'expo-camera';
 import * as cv from 'opencv';
@@ -78,7 +78,6 @@ const App = () => {
   return (
     <View>
       <Camera style={{ flex: 1 }} type={Camera.Constants.Type.back}>
-        {/* ... */}
       </Camera>
       {image && <Image source={{ uri: image }} />}
       <Text>Alignment: {alignmentStatus}</Text>
@@ -87,3 +86,4 @@ const App = () => {
 };
 
 export default App;
+*/

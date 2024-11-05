@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Button, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
 
 const HomeScreen = () => {
-  const [image, setImage] = useState(null);
+  const [image, imageUri, setImage] = useState(null);
+  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+
   const navigation = useNavigation();
   const handleImagePick = async () => {
     try {
@@ -17,14 +19,133 @@ const HomeScreen = () => {
 
       if (!result.cancelled) {
         console.log('Setting image URI')
-        setImage(result.uri);
-        navigation.navigate('Results', { imageUri: result.uri });
+        // setImage(result.uri);
+        // setImageUri(result.uri);
+        uploadImage(result.uri);
+      //  processImage(result.uri);
+        // navigation.navigate('Results', { imageUri: result.uri });
+      }
+      else{
+        console.log("Results cancelled")
       }
     } catch (error) {
       console.error('Error capturing image:', error);
     }
   };
 
+  // const handlePickImage = () => {
+  //   ImagePicker.launchImageLibrary({ mediaType: 'photo' }, (response) => {
+  //     if (!response.didCancel) {
+  //       setImageUri(response.uri);
+  //       uploadImage(response.uri);
+  //     }
+  //   });
+  // };
+
+  const uploadImage = async (uri) => {
+    const formData = new FormData();
+    formData.append('image', {
+      uri,
+      type: 'image/jpeg',
+      name: 'photo.jpg',
+    });
+
+    try {
+      print("Sending POST request")
+      const res = await fetch('https://9a38-106-219-71-135.ngrok-free.app/process-image', {
+        method: 'POST',
+        headers: {'Content-Type': 'multipart/form-data'},
+        body: formData,
+      });
+      console.log(res)
+      const result = await res.json();
+      Alert.alert('Result', result.result);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const processImage = async (imageUri) => {
+    const apiUrl = 'http://127.0.0.1:5000/process-image';  // Replace with your machine's IP
+    
+    const formData = new FormData();
+    formData.append('image', {
+      uri: imageUri,
+      type: 'image/png',
+      name: 'photo.png',
+    });
+  
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        body: formData,
+      });
+  
+      const data = await response.json();
+      console.log('Response:', data);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+  
+
+  // Function to draw on canvas after the image is loaded
+  // const drawOnCanvas = async (canvas) => {
+  //   if (!imageUri || !canvas) return;
+
+  //   const context = canvas.getContext('2d');
+  //   canvas.width = imageDimensions.width;
+  //   canvas.height = imageDimensions.height;
+
+  //   const canvasImage = new CanvasImage(canvas);
+  //   canvasImage.src = imageUri;
+
+  //   canvasImage.addEventListener('load', () => {
+  //     context.drawImage(canvasImage, 0, 0, canvas.width, canvas.height);
+  //     processImage(context, canvas.width, canvas.height);
+  //   });
+  // };
+
+  // Basic image processing function to detect paint marks and highlight them
+  // const processImage = (context, width, height) => {
+  //   context.strokeStyle = 'yellow';
+  //   context.lineWidth = 5;
+
+  //   // Example coordinates for marking bolts
+  //   const exampleBoltPositions = [
+  //     { x: width * 0.2, y: height * 0.3 },
+  //     { x: width * 0.5, y: height * 0.5 },
+  //     { x: width * 0.8, y: height * 0.7 },
+  //   ];
+
+  //   exampleBoltPositions.forEach(({ x, y }) => {
+  //     context.beginPath();
+  //     context.arc(x, y, 15, 0, 2 * Math.PI); // Draw circle around the bolt
+  //     context.stroke();
+
+  //     // Example logic for marking alignment based on random value
+  //     const isAligned = Math.random() > 0.5;
+  //     if (isAligned) {
+  //       context.fillStyle = 'green';
+  //     } else {
+  //       context.fillStyle = 'red';
+  //     }
+
+  //     context.beginPath();
+  //     context.arc(x, y, 10, 0, 2 * Math.PI);
+  //     context.fill();
+  //   });
+  // };
+
+  // useEffect(() => {
+  //   if (canvasRef.current) {
+  //     drawOnCanvas(canvasRef.current);
+  //   }
+  // }, [imageUri, imageDimensions]);
+  
   return (
     <View>
       <Button title="Capture Image" onPress={handleImagePick} />
